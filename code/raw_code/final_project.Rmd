@@ -80,7 +80,7 @@ mean(atus.all$t120101, rm.na = TRUE)
  mutate(total = select(., 2:5) %>% rowSums)
 
 ```{r childcare-density-plot}
-ggplot(atus.all) +
+ggplot(atus.all, aes(x = CHILDCARE)) +
     geom_density()
 ```
 
