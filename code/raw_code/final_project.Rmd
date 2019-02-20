@@ -1,6 +1,6 @@
 ---
 title: "final_project"
-author: "Jane Doe"
+author: "Kevin Gilds"
 date: "8/10/2018"
 output: html_document
 ---
@@ -21,8 +21,9 @@ library(forcats)
 library(ggthemes)
 library(knitr)
 
+
 ## set working directory
-knitr::opts_knit$set(root.dir = '/cloud/project')
+knitr::opts_knit$set(root.dir = '/cloud/project/final_project')
 ```
 
 ### The Data
@@ -60,13 +61,23 @@ atus.all <- atus.sum %>%
 
 ```{r initial-exploration}
 ### Add Code Here
+dim(atus.all)
+str(atus.all)
+glimpse(atus.all)
+names(atus.all)
+
+mean(atus.all$t120101, rm.na = TRUE)
+
 ```
 
 
 ```{r creating-childcare-var}
-atus.all <- atus.all %>% 
-    mutate(CHILDCARE = )
+  atus.all <- atus.all %>% 
+  mutate(CHILDCARE = t030101 + t030102 + t030103 + t030104 + t030105 + t030106 + t030108 + t030109 + t030110 + t030110 + t030111 + t030112 + t030199)
+    
 ```
+
+ mutate(total = select(., 2:5) %>% rowSums)
 
 ```{r childcare-density-plot}
 ggplot(atus.all) +
