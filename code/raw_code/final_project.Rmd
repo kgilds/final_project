@@ -86,8 +86,8 @@ ggplot(atus.all, aes(x = CHILDCARE)) +
 
 ```{r gender-analysis}
 atus.all %>% 
-    group_by() %>% 
-    FUNCTION()
+    group_by(TESEX) %>% 
+    summarise(average = mean(CHILDCARE))
 ```
 
 ```{r replacing-na}
