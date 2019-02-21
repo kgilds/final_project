@@ -92,7 +92,18 @@ atus.all %>%
 
 ```{r replacing-na}
 ## replace -1 in the variable TRDPFTPT with NA.
+
+atus.all <- atus.all %>%
+  mutate(TRDPFTPT = ifelse(TRDPFTPT == -1, NA, TRDPFTPT))
 ```
+
+
+
+
+
+mutate_at(vars(contains("sleep")), ~(.*60)) %>%
+
+mutate(brainwt2 = ifelse(brainwt > 4, NA, brainwt)) %>%
 
 ```{r exploratory-analysis}
 ## add your exploratory analysis code here
