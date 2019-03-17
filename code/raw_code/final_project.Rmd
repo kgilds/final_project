@@ -20,6 +20,7 @@ library(zoo)
 library(forcats)
 library(ggthemes)
 library(knitr)
+library(tidyr)
 
 
 ## set working directory
@@ -59,6 +60,8 @@ atus.all <- atus.sum %>%
 
 ### Exploratory Analysis of Child Care Data
 
+This code chunk contains code scripts to provide a structure of the data including counts and types of variables. 
+
 ```{r initial-exploration}
 ### Add Code Here
 dim(atus.all)
@@ -70,6 +73,7 @@ mean(atus.all$t120101, rm.na = TRUE)
 
 ```
 
+This code chunk creates a childcare variable.
 
 ```{r creating-childcare-var}
   atus.all <- atus.all %>% 
@@ -77,7 +81,7 @@ mean(atus.all$t120101, rm.na = TRUE)
     
 ```
 
- mutate(total = select(., 2:5) %>% rowSums)
+The code chunk produces a density plot pertaining to the amount of time spent on childcare.
 
 ```{r childcare-density-plot}
 ggplot(atus.all, aes(x = CHILDCARE)) +
@@ -95,74 +99,244 @@ atus.all %>%
 
 atus.all <- atus.all %>%
   mutate(TRDPFTPT = ifelse(TRDPFTPT == -1, NA, TRDPFTPT))
+
+
+glimpse(atus.all$TRDPFTPT)
+
+table(atus.all$TRDPFTPT)
+
+atus.all %>% tabyl(TRDPFTPT) %>%
+  adorn_totals()
 ```
 
-
-
-
-
-mutate_at(vars(contains("sleep")), ~(.*60)) %>%
-
-mutate(brainwt2 = ifelse(brainwt > 4, NA, brainwt)) %>%
+The code below produces exploratory plots and tables. 
 
 ```{r exploratory-analysis}
 ## add your exploratory analysis code here
+
+ggplot(atus.all, aes(x= TEAGE, y = CHILDCARE)) + geom_jitter()
+
+
+
+atus.all %>% tabyl(CHILDCARE, TEAGE)
+
+ggplot(atus.all, aes(x= HEFAMINC,  y= CHILDCARE, group= HEFAMINC)) + geom_boxplot()
+
+atus.all %>% tabyl(CHILDCARE, HEFAMINC)
+
+ggplot(atus.all, aes(x=PEMARITL, y=CHILDCARE)) + geom_point ()
+
+atus.all %>% tabyl(CHILDCARE, PEMARITL)
+
+ggplot(atus.all, aes(x= TRDPFTPT, y = CHILDCARE)) + geom_jitter()
+
+atus.all %>% tabyl(CHILDCARE, TRDPFTPT)
+
+
+
 ```
+
+```{r}
+atus.all %>%
+  tabyl(TRYHHCHILD) %>%
+  adorn_totals()
+```
+I used this link to try and figure out what this variable means. 
+https://www.bls.gov/tus/freqvariables.pdf
+
+```{r}
+atus.all  <- atus.all %>%
+  filter(TRYHHCHILD >0) %>%
+  mutate(TRYHHCHILD = ifelse(TRYHHCHILD == -1, NA, TRYHHCHILD))
+```
+
+
 
 ### Regression Analysis
 
+The code chunk below produces a model to determine factors that correspond the the amount of time one spends on child care. 
+
 ```{r reg-analysis}
 ## add your regression analysis code here
-reg_model <- lm()
+reg_model <- lm(CHILDCARE ~TRDPFTPT + PEMARITL + TEAGE + TESEX + HEFAMINC + TRYHHCHILD, data = atus.all)
 summary(reg_model)
 ```
 
+
 ### Exploratory Analysis of Age and Activities
+
+The code chunk below takes the sum of the variables that belong to each major category. 
+
 
 ```{r activity-cats}
 atus.wide <- atus.all %>%
-    mutate(act01 = ,
-           act02 = ,
-           act03 = ,
-           act04 = ,
-           act05 = ,
-           act06 = ,
-           act07 = ,
-           act08 = ,
-           act09 = ,
-           act10 = ,
-           act11 = ,
-           act12 = ,
-           act13 = ,
-           act14 = ,
-           act15 = ,
-           act16 = ,
+    mutate(act01 = rowSums(atus.all[, grep("t01", names(atus.all))]),
+           act02 = rowSums(atus.all[,grep("t02", names(atus.all))]),
+           act03 = rowSums(atus.all[,grep("t03", names(atus.all))]),
+           act04 = rowSums(atus.all[, grep("t04", names(atus.all))]),
+           act05 = rowSums(atus.all[, grep("t05", names(atus.all))]),
+           act06 = rowSums(atus.all[, grep("t06", names(atus.all))]),
+           act07 = rowSums(atus.all[, grep("t07", names(atus.all))]),
+           act08 = rowSums(atus.all[, grep("t08", names(atus.all))]),
+           act09 = rowSums(atus.all[, grep("t09", names(atus.all))]),
+           act10 = rowSums(atus.all[, grep("t10", names(atus.all))]),
+           act11 = rowSums(atus.all[, grep("t11", names(atus.all))]),
+           act12 = rowSums(atus.all[, grep("t12", names(atus.all))]),
+           act13 = rowSums(atus.all[, grep("t13", names(atus.all))]),
+           act14 = rowSums(atus.all[, grep("t14", names(atus.all))]),
+           act15 = rowSums(atus.all[, grep("t15", names(atus.all))]),
+           act16 = rowSums(atus.all[, grep("t16", names(atus.all))]),
            # act17 = , there is no category 17 in the data
-           act18 = ) %>% 
+           act18 = rowSums(atus.all[, grep("t18", names(atus.all))])) %>% 
     select(TUCASEID, TEAGE, HEFAMINC, starts_with("act"))
 ```
 
-```{r wide-to-long}
-atus.long <- atus.wide %>% 
-  # use code to convert the wide format to long.
+The code chunk below generates a table to  breakdown the most minutes on average spent by major activity
+
+```{r}
+
+atus.long %>% 
+    group_by(ACTIVITY) %>% 
+    summarise(AVGMINS = mean(MINS)) 
+    
 ```
 
+
+            
+
+```{r wide-to-long}
+atus.long_1 <- atus.wide %>% 
+  gather("ACTIVITY", "MINS", 4:20)
+
+#atus.long %>%
+  #group_by(ACTIVITY) %>%
+  #summarise(TotalMins = sum(MINS))
+  # use code to convert the wide format to long.
+
+act_5 <- atus.long %>%
+  filter(ACTIVITY == "work activities") 
+
+summary(act_5) #answer to quiz questions
+
+atus.long$HEFAMINC <- factor(atus.long$HEFAMINC) 
+
+
+atus.long$ACTIVITY <- factor(atus.long$ACTIVITY, labels = c("personal care", "household activities", "caretaking household-members", "caretaking non-household", "work activities", "education", "consumer purchases", "professional services", "household services", "government services", "eating-drinking", "socializing", "sports", "religious", "volunteer", "telephone", "traveling" ))
+
+
+atus.long$HEFAMINC <- factor(atus.long$HEFAMINC) 
+
+
+atus.long <- atus.long %>%
+  mutate(HEFAMINC = recode(HEFAMINC,
+                           
+                           "1" = "Less than $10,000",
+                           "2" = "Less than $10,000",
+                           "3" = "Less than $10,000",
+                           "4" = "$10,000 - $20,000",
+                           "5" = "$10,000 - $20,000",
+                           "6" = "$10,000 - $20,000",
+                           "7" = "$20,000 - $35,000",
+                           "8" = "$20,000 - $35,000",
+                           "9" = "$20,000 - $35,000",
+                           "10" = "$35,000 - $60,000",
+                           "11" = "$35,000 - $60,000",
+                           "12" = "$35,000 - $60,000",
+                           "13" = "$60,000 - $100,000",
+                           "14" = "$60,000 - $100,000",
+                           "15" = "$100,000 and over",
+                           "16" = "$100,000 and over"))
+                           
+                           
+                           
+levels(atus.long$HEFAMINC)
+
+
+#atus.long$HEFAMINC <- fct_relevel(atus.long$HEFAMINC, "Less than $10,000")
+#atus.long$HEFAMINC <- fct_relevel(atus.long$HEFAMINC, "$100,000 and over", after = Inf)
+#levels(atus.long$HEFAMIC) <- rev(atus.long$HEFAMINC)
+#mtcars$cyl2 <- factor(mtcars$cyl, labels = c("alpha", "beta", "gamma"))
+str(atus.long)
+
+
+
+
+
+```
+
+The graph below provides multiple scatter plot to demonstrate the relationship between age and the activities. We can see personal activities, work activities and socializing vary by age. 
 ```{r age-activity}
 atus.long %>% 
     group_by(ACTIVITY, TEAGE) %>% 
     summarise(AVGMINS = mean(MINS)) %>% 
-    ggplot() +
+    ggplot(.,aes(y= AVGMINS, x = TEAGE)) +
+      geom_point() +
+    facet_wrap(~ACTIVITY)
 ```
 
 ### Exploratory Analysis of Income and Activities
 
-```{r activity-income}
-atus.long %>% 
-  group_by(ACTIVITY, HEFAMINC) %>% 
-  ## add the rest of the code here
+I split the data frame into two separate objects and merged them back together in order to get the percent of time spent on activities by income group. 
+
+```{r}
+mins_income <- atus.long %>%  # Create object to get minutes by Income
+  group_by(ACTIVITY, HEFAMINC) %>%   # Group the object by activity and income
+  mutate(AVGMINS = mean(MINS))%>%   # Get average of Minutes
+  summarise(MIN_INCOME = sum(AVGMINS))  # Get the sume of the average minuts by income
+
+  
+mins_income
+
+mins_activity <- atus.long %>% #create ojbect 
+  group_by(ACTIVITY) %>% # group by major cateogry
+  mutate(MIN_ACTIVITY = mean(MINS)) %>%
+  summarise(MIN_ACTIVITY = sum(MIN_ACTIVITY)) # sum 
+
+
+
+
+minutes_activity_income <- merge(mins_income, mins_activity, by= "ACTIVITY")
+
+minutes_activity_income_tbl <- minutes_activity_income %>%
+  mutate(p = MIN_INCOME/MIN_ACTIVITY) %>%
+  mutate(ACTIVITY = reorder(ACTIVITY, MIN_INCOME)) 
+  
+minutes_activity_income_tbl  
+  
+
 ```
+
+
+The goal was to mimic a graph found [here](https://raw.githubusercontent.com/halhen/viz-pub/master/pastime-income/pastime.png). The graph below is arranged by the most frequent activities. 
+
+```{r}
+
+minutes_activity_income_tbl %>%
+  mutate(p = MIN_INCOME/MIN_ACTIVITY) %>%
+  mutate(ACTIVITY = reorder(ACTIVITY, MIN_ACTIVITY)) %>%
+  ggplot(aes(reorder(ACTIVITY), x = ACTIVITY, y = p, fill = HEFAMINC, group =2)) +
+  geom_bar(stat='identity', position="fill") +
+  coord_flip() +
+  scale_fill_brewer(palette="BrBG") +
+  labs(title="Percent of Time Spent on Activities",
+       subtitle="Time Use Survey of 10493 Americans",
+       caption="Source: American Time Use Survey, 2016",
+       fill="Income",
+       y = "Percent of Time Spent on Activities") +
+  theme_bw() +
+	theme(panel.grid.major.y = element_blank(),
+		  panel.grid.minor.y = element_blank(),
+		  axis.text.x = element_blank() )
+
+
+```
+
+
+`
 
 
 ```{r save-plot}
 ## save the plot above
+
+ggsave("figures/explanatory_figures/activity-income.png")
 ```
